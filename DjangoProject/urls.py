@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .yasg import urlpatterns as swagger
 
 from src.views import ReaderListCreateAPIView, ReaderRetrieveUpdateDestroyAPIView, BookListCreateAPIView, \
     BookRetrieveUpdateDestroyAPIView, AuthorListCreateAPIView, AuthorRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('readers/', ReaderListCreateAPIView.as_view(), name='reader_list_create'),
     path('readers/int:pk/', ReaderRetrieveUpdateDestroyAPIView.as_view(), name='reader_retrieve_update_destroy'),
     path('books/', BookListCreateAPIView.as_view(), name='book_list_create'),
@@ -27,3 +29,5 @@ urlpatterns = [
     path('authors/', AuthorListCreateAPIView.as_view(), name='author_list_create'),
     path('authors/int:pk/', AuthorRetrieveUpdateDestroyAPIView.as_view(), name='author_retrieve_update_destroy'),
 ]
+
+urlpatterns += swagger

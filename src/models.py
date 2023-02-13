@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Author(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to='photos/', blank=True, null=True)
+    first_name = models.CharField(max_length=100, verbose_name='Имя')
+    last_name = models.CharField(max_length=100, verbose_name='Фамилия')
+    photo = models.ImageField(upload_to='photos/', blank=True, null=True, verbose_name='Фото')
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -13,11 +13,11 @@ class Author(models.Model):
 
 
 class Book(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    page_count = models.PositiveIntegerField()
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    available_copies = models.PositiveIntegerField()
+    title = models.CharField(max_length=200, verbose_name='Название')
+    description = models.TextField(verbose_name='Описание')
+    page_count = models.PositiveIntegerField(verbose_name='Кол-во страниц')
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, verbose_name='Автор')
+    available_copies = models.PositiveIntegerField(verbose_name='Кол-во')
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -26,11 +26,11 @@ class Book(models.Model):
 
 
 class Reader(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    phone_number = models.BigIntegerField()
+    first_name = models.CharField(max_length=100, verbose_name='Имя')
+    last_name = models.CharField(max_length=100, verbose_name='Фамилия')
+    phone_number = models.BigIntegerField(verbose_name='Телефон')
     is_active = models.BooleanField(default=True)
-    books = models.ManyToManyField(Book, through='ReaderBook', related_name='readers')
+    books = models.ManyToManyField(Book, verbose_name='Книги')
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
@@ -38,23 +38,3 @@ class Reader(models.Model):
         return f'{self.first_name} {self.last_name}'
 
 
-class ReaderBook(models.Model):
-    reader = models.ForeignKey(Reader, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    date_borrowed = models.DateField(auto_now_add=True)
-    date_returned = models.DateField(null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        # Check if the reader has already borrowed 3 books
-        if self.reader.books.count() >= 3:
-            raise ValueError('Reader can borrow only 3 books at a time')
-        # Check if the book is available in the library
-        if self.book.available_copies <= 0:
-            raise ValueError('Book is not available in the library')
-        self.book.available_copies -= 1
-        self.book.save()
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.book.available_copies += 1
-        self.book.save()
