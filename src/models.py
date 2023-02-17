@@ -30,11 +30,9 @@ class Reader(models.Model):
     last_name = models.CharField(max_length=100, verbose_name='Фамилия')
     phone_number = models.BigIntegerField(verbose_name='Телефон')
     is_active = models.BooleanField(default=True)
-    books = models.ManyToManyField(Book, verbose_name='Книги')
+    books = models.ManyToManyField(Book, verbose_name='Книги', blank=True, null=True)
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-
-
