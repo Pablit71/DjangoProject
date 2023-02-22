@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <title>Список читателей</title>
+    <style>
+      /* Стилизация таблицы */
+      table {
+        border-collapse: collapse;
+        width: 80%;
+        margin: auto;
+      }
+        th, td {
+    text-align: left;
+    padding: 8px;
+  }
+
+  th {
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  /* Фоновое изображение */
+html, body {
+    height: 100%;
+}
+
+body {
+    background-image: url("{% static 'images/1.jpeg' %}");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed; /* добавлено свойство */
+}
+
+
+
+
+
+
+    </style>
+</head>
+<body>
+<h1>Список читателей</h1>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>Фамилия</th>
+        <th>Телефон</th>
+        <th>Активность</th>
+        <th>Книги</th>
+        <th>Дата создания</th>
+        <th>Дата обновления</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for reader in readers %}
+    <tr>
+        <td>{{ reader.id }}</td>
+        <td>{{ reader.first_name }}</td>
+        <td>{{ reader.last_name }}</td>
+        <td>{{ reader.phone_number }}</td>
+        <td>{{ reader.is_active }}</td>
+        <td>{{ reader.books.all|join:', ' }}</td>
+        <td>{{ reader.date_create }}</td>
+        <td>{{ reader.date_update }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
