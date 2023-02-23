@@ -22,10 +22,3 @@ class BookViewSet(viewsets.ModelViewSet):
 class ReaderViewSet(viewsets.ModelViewSet):
     queryset = Reader.objects.all()
     serializer_class = ReaderSerializer
-    lookup_field = 'id'
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ('is_active',)
-
-    def get(self, request, *args, **kwargs):
-        readers = self.get_queryset()
-        return render(request, 'reader_list.html', {'readers': readers})
