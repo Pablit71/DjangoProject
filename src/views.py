@@ -1,50 +1,30 @@
 from django.shortcuts import render
 from rest_framework import generics, serializers
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 
 from src.models import Author, Reader, Book
 from src.serializers import ReaderSerializer, BookSerializer, AuthorSerializer
 
 
-class ReaderListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Reader.objects.all()
-    serializer_class = ReaderSerializer
-
-    def perform_create(self, serializer):
-        max_books = 3
-        books = self.request.data.get('books', [])
-        if len(books) > max_books:
-            raise serializers.ValidationError(f'Maximum {max_books} books allowed.')
-        serializer.save()
-
-
-class ReaderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Reader.objects.all()
-    serializer_class = ReaderSerializer
-
-
-class BookListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-
-
-class BookRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-
-
-class AuthorListCreateAPIView(generics.ListCreateAPIView):
+class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    lookup_field = 'id'
 
 
-class AuthorRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
+class BookViewSet(viewsets.ModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    lookup_field = 'id'
 
 
-class ReaderListAPIView(generics.ListAPIView):
+class ReaderViewSet(viewsets.ModelViewSet):
     queryset = Reader.objects.all()
     serializer_class = ReaderSerializer
+    lookup_field = 'id'
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ('is_active',)
 
     def get(self, request, *args, **kwargs):
         readers = self.get_queryset()

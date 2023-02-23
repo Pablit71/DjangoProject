@@ -13,27 +13,27 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from django.conf import settings
+from rest_framework import routers
+
+
 from .yasg import urlpatterns as swagger
 
-from src.views import ReaderListCreateAPIView, ReaderRetrieveUpdateDestroyAPIView, BookListCreateAPIView, \
-    BookRetrieveUpdateDestroyAPIView, AuthorListCreateAPIView, AuthorRetrieveUpdateDestroyAPIView, ReaderListAPIView
+from src.views import AuthorViewSet, BookViewSet, ReaderViewSet
 
+router = routers.DefaultRouter()
+router.register(r'authors', AuthorViewSet)
+router.register(r'books', BookViewSet)
+router.register(r'readers', ReaderViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('readers/', ReaderListAPIView.as_view(), name='reader_list'),
-    path('readers/add/', ReaderListCreateAPIView.as_view(), name='reader_list_create'),
-    path('readers/int:pk/', ReaderRetrieveUpdateDestroyAPIView.as_view(), name='reader_retrieve_update_destroy'),
+    path('library/', include(router.urls))
 
-    path('books/', BookListCreateAPIView.as_view(), name='book_list_create'),
-    path('books/int:pk/', BookRetrieveUpdateDestroyAPIView.as_view(), name='book_retrieve_update_destroy'),
-
-    path('authors/', AuthorListCreateAPIView.as_view(), name='author_list_create'),
-    path('authors/int:pk/', AuthorRetrieveUpdateDestroyAPIView.as_view(), name='author_retrieve_update_destroy'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += swagger
