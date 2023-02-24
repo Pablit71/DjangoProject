@@ -9,7 +9,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
+    author = serializers.CharField()
 
     class Meta:
         model = Book
@@ -17,11 +17,13 @@ class BookSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         author_data = validated_data.pop('author')
-        author_serializer = AuthorSerializer(data=author_data)
-        author_serializer.is_valid(raise_exception=True)
-        author = author_serializer.save()
-        book = Book.objects.create(author=author, **validated_data)
-        return book
+        author_first_name, author_last_name = author_data.split(" ")
+        author, created = Author.objects.get_or_create(
+            first_name=author_first_name,
+            last_name=author_last_name
+        )
+        validated_data['author'] = author
+        return super().create(validated_data)
 
 
 class ReaderSerializer(serializers.ModelSerializer):
