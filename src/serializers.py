@@ -39,7 +39,8 @@ class ReaderSerializer(serializers.ModelSerializer):
         return books
 
     def validate_phone_number(self, phone_number):
-        if len(phone_number) > 10:
+        phone_number_str = str(phone_number)
+        if len(phone_number_str) > 10:
             raise serializers.ValidationError("Номер телефона не может быть длиннее 10 цифр")
         return phone_number
 
