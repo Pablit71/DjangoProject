@@ -25,6 +25,21 @@ class BookSerializer(serializers.ModelSerializer):
         validated_data['author'] = author
         return super().create(validated_data)
 
+    def update(self, instance, validated_data):
+        author_data = validated_data.pop('author')
+        author_first_name, author_last_name = author_data.split(" ")
+        author, created = Author.objects.get_or_create(
+            first_name=author_first_name,
+            last_name=author_last_name
+        )
+        instance.author = author
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.page_count = validated_data.get('page_count', instance.page_count)
+        instance.available_copies = validated_data.get('available_copies', instance.available_copies)
+        instance.save()
+        return instance
+
 
 class ReaderSerializer(serializers.ModelSerializer):
     books = serializers.SlugRelatedField(queryset=Book.objects.all(), many=True, slug_field='title')

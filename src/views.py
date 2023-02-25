@@ -1,6 +1,4 @@
-from django.shortcuts import render
-from rest_framework import generics, serializers
-from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import viewsets
 
 from src.models import Author, Reader, Book
