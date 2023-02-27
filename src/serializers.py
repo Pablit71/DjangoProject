@@ -2,6 +2,24 @@ from rest_framework import serializers
 from .models import Reader, Book, Author
 
 
+class PageCountValidator:
+    def __call__(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Количество страниц не может быть отрицательным")
+
+
+class PhoneNumberValidator:
+    def __call__(self, value):
+        phone_number = str(value)
+        if not phone_number.startswith("7"):
+            raise serializers.ValidationError("Номер телефона должен начинаться с 7")
+        if len(phone_number) != 11:
+            raise serializers.ValidationError("Номер телефона должен содержать 11 цифр")
+        if not phone_number.isdigit():
+            raise serializers.ValidationError("Номер телефона должен содержать только цифры")
+        return value
+
+
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
@@ -10,6 +28,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     author = serializers.CharField()
+    page_count = serializers.IntegerField(validators=[PageCountValidator()])
 
     class Meta:
         model = Book
@@ -43,6 +62,7 @@ class BookSerializer(serializers.ModelSerializer):
 
 class ReaderSerializer(serializers.ModelSerializer):
     books = serializers.SlugRelatedField(queryset=Book.objects.all(), many=True, slug_field='title')
+    phone_number = serializers.CharField(validators=[PhoneNumberValidator()])
 
     class Meta:
         model = Reader
@@ -53,15 +73,44 @@ class ReaderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Читатель не может иметь более 3 книг")
         return books
 
-    def validate_phone_number(self, phone_number):
-        phone_number_ = str(phone_number)
-        if len(phone_number_) > 10:
-            raise serializers.ValidationError("Номер телефона не может быть длиннее 10 цифр")
-        return phone_number
-
     def validate(self, data):
         books = data.get('books')
         for book in books:
             if book.available_copies == 0:
                 raise serializers.ValidationError(f"Книга '{book.title}' недоступна для добавления в библиотеку")
         return data
+
+    def create(self, validated_data):
+        books = validated_data.pop('books')
+        reader = super().create(validated_data)
+        for book in books:
+            book.available_copies -= 1
+            book.save()
+        return reader
+
+    def update(self, instance, validated_data):
+        books = validated_data.pop('books', [])
+        reader = super().update(instance, validated_data)
+
+        # Получаем уникальный набор книг
+        new_books = set(books)
+        old_books = set(instance.books.all())
+
+        # Обновляем количество доступных копий для каждой книги
+        for book in old_books - new_books:
+            book.available_copies += 1
+            book.save()
+
+        for book in new_books - old_books:
+            book.available_copies -= 1
+            book.save()
+
+        # Добавляем новые книги
+        for book in new_books - old_books:
+            instance.books.add(book)
+
+        # Удаляем старые книги
+        for book in old_books - new_books:
+            instance.books.remove(book)
+
+        return reader
