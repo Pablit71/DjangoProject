@@ -81,11 +81,12 @@ class ReaderSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        books = validated_data.pop('books')
+        books = validated_data.pop('books', [])
         reader = super().create(validated_data)
         for book in books:
             book.available_copies -= 1
             book.save()
+            reader.books.add(book)
         return reader
 
     def update(self, instance, validated_data):
