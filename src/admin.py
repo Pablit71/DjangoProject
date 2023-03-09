@@ -24,13 +24,13 @@ class BookAdmin(admin.ModelAdmin):
 
     make_book_unavailable.short_description = "Отметить выбранные книги как недоступные"
 
-
     actions = [make_book_unavailable]
 
 
 class ReaderAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'first_name', 'phone_number', 'is_active', 'date_create', 'date_update')
-    list_filter = ('is_active', 'date_create', 'date_update')
+    list_display = ('last_name', 'first_name', 'phone_number', 'is_active', 'date_update')
+    list_filter = ('is_active', 'date_update')
+    list_display_links = ('phone_number',)
 
     def make_active(self, request, queryset):
         queryset.update(is_active=True)
@@ -42,6 +42,7 @@ class ReaderAdmin(admin.ModelAdmin):
         queryset.update(is_active=False)
 
     make_inactive.short_description = "Деактивировать выбранных читателей"
+
     def delete_all_books(self, request, queryset):
         for obj in queryset:
             obj.books.clear()

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import Reader, Book, Author
 
 
@@ -87,11 +88,14 @@ class ReaderSerializer(serializers.ModelSerializer):
             book.available_copies -= 1
             book.save()
             reader.books.add(book)
+        reader.set_password(reader.password)
+        reader.save()
         return reader
 
     def update(self, instance, validated_data):
         books = validated_data.pop('books', [])
         reader = super().update(instance, validated_data)
+        reader.set_password(reader.password)
 
         # Получаем уникальный набор книг
         new_books = set(books)
@@ -114,4 +118,5 @@ class ReaderSerializer(serializers.ModelSerializer):
         for book in old_books - new_books:
             instance.books.remove(book)
 
+        reader.save()
         return reader

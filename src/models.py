@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -29,14 +30,26 @@ class Book(models.Model):
         return self.title
 
 
-class Reader(models.Model):
-    first_name = models.CharField(max_length=100, verbose_name='Имя')
-    last_name = models.CharField(max_length=100, verbose_name='Фамилия')
+class Reader(AbstractUser):
     phone_number = models.BigIntegerField(verbose_name='Телефон')
     is_active = models.BooleanField(default=True)
     books = models.ManyToManyField(Book, verbose_name='Книги', blank=True, null=True)
-    date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='myuser_set',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+    # связь с правами доступа, используем свойство related_name, чтобы избежать конфликтов
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='myuser_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
